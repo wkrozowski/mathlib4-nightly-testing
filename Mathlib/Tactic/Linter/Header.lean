@@ -415,6 +415,9 @@ def headerLinter : Linter where run := withSetOptionIn fun stx ↦ do
     Linter.logLint linter.directoryDependency stx msgs.trimAsciiStart.copy
   let afterImports := firstNonImport? upToStx
   if afterImports.isNone then return
+  -- Skip all header checks for deprecated module files: they typically have no copyright header
+  -- or module doc-string.
+  if afterImports.any (·.isOfKind ``Lean.Parser.Command.deprecated_module) then return
   let copyright := match upToStx.getHeadInfo with
     | .original lead .. => lead.toString
     | _ => ""
